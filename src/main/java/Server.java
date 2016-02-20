@@ -9,7 +9,7 @@ public class Server {
 
     public Server() {}
 
-    public void listen() {
+    public void start() {
         // Continuously listening to DC requests, if any arrives, immediately send to scheduler
         // while listening:
         //   if req arrive:
