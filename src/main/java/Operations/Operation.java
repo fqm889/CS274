@@ -5,5 +5,5 @@ package Operations;
  */
 public abstract class Operation {
     public abstract boolean doOp();
-    public abstract boolean undoOP();
+    public abstract boolean undoOp();
 }
