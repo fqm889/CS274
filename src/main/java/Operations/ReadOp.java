@@ -48,7 +48,7 @@ public class ReadOp extends Operation {
 
     @Override
     public boolean doOp() {
-	val = null
+	val = null;
 	try {
 		Get g = new Get(Bytes.toBytes(key));
 		Result r = table.get(get);
