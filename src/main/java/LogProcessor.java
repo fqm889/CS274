@@ -11,9 +11,25 @@ public class LogProcessor {
     public PT pt;
     public ArrayList<Txns> waitinglist;
 
-    public LogProcessor(Log log, PT pt) {}
+    public LogProcessor(Log log, PT pt) {
+
+    }
 
     public void checkLog() {}
 
-    public void processLog() {}
+    public void processLog() {
+        ArrayList<Txns> ls = log.getLog();
+        for (Txns l : ls) {
+            if ((l.isProcessed() && !l.isPending()) || l.isLocal()) { continue; }
+            for (Txns t : pt.getPt()) {
+                if (l.checkForConflict(t)) {
+                    t.abort();
+                }
+            }
+            if (l.getState()==txnsState.COMMIT) {
+                l.write();
+            }
+        }
+    }
+
 }

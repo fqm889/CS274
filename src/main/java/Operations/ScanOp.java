@@ -1,9 +1,9 @@
 package Operations;
 
 /**
- * Created by sicongfeng on 16/2/19.
+ * Created by sicongfeng on 16/3/13.
  */
-public class AbortOp extends Operation {
+public class ScanOp extends Operation {
     @Override
     public boolean doOp() {
         return false;

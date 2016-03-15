@@ -8,9 +8,4 @@ public class CommitOp extends Operation {
     public boolean doOp() {
         return false;
     }
-
-    @Override
-    public boolean undoOP() {
-        return false;
-    }
 }

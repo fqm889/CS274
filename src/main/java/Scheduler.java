@@ -1,3 +1,6 @@
+import java.sql.Timestamp;
+import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.concurrent.LinkedBlockingQueue;
 
 /**
@@ -12,6 +15,9 @@ public class Scheduler {
     public PTProcessor ptProcessor; // run in separate thread, deal with PT
     public Log log; // keep book, thread safe
     public PT pt; // keep book, thread safe
+
+    public ArrayList<ArrayList<Timestamp>> T;
+    public HashMap<String, Integer> DC2Num;
 
     public Scheduler() {
         // start receiver

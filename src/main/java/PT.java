@@ -6,6 +6,12 @@ import java.util.ArrayList;
 public class PT {
     ArrayList<Txns> pt;
 
+    public ArrayList<Txns> getPt() {
+        return pt;
+    }
+
+
+
     public PT() {}
 
     public PT addTxns(Txns t) {
