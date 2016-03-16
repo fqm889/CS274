@@ -12,7 +12,8 @@ public class LogProcessor {
     public ArrayList<Txns> waitinglist;
 
     public LogProcessor(Log log, PT pt) {
-
+        this.log = log;
+        this.pt = pt;
     }
 
     public void checkLog() {}

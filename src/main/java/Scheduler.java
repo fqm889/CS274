@@ -1,3 +1,4 @@
+import java.io.IOException;
 import java.sql.Timestamp;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -21,14 +22,24 @@ public class Scheduler {
 
     public Scheduler() {
         // start receiver
-
+        try {
+            receiver = new Server("0.0.0.0", 8888);
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+        Thread tServer = new Thread(receiver);
+        tServer.start();
         // start sender
 
         // start client
 
         // prepare Log and PT
+        log = new Log();
+        pt = new PT();
 
         // prepare Processor
+        logProcessor = new LogProcessor(log, pt);
+        ptProcessor = new PTProcessor(log, pt);
     }
 
     public void algorithm() {

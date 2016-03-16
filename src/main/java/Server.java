@@ -66,6 +66,14 @@ public class Server implements Runnable {
         // Once found request for other DC, immediately send
     }
 
+    public void doRead(SelectionKey key) {
+
+    }
+
+    public void doWrite(SelectionKey key) {
+
+    }
+
     public void run() {
         // Continuously listening to DC requests, if any arrives, immediately send to scheduler
         // while listening:
@@ -85,7 +93,12 @@ public class Server implements Runnable {
                     if (key.isAcceptable()) {
                         accept(key);
                     }
-                    // Yet need to implement sending method
+                    else if (key.isReadable()) {
+                        doRead(key);
+                    }
+                    else if (key.isWritable()) {
+                        doWrite(key);
+                    }
                 }
                 selectedKeys.clear();
             } catch (ClosedSelectorException ignore) {
