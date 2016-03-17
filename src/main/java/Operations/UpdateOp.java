@@ -37,26 +37,36 @@ import com.yahoo.ycsb.DB;
  * modified by Xin on 16/2/24
  */
 
-public class ReadOp extends Operation {
-    private Set<String> fields; 
-    private HashMap<String,ByteIterator> result;
+public class UpdateOp extends Operation {
+    private HashMap<String,ByteIterator> preValues; 
+    private HashMap<String,ByteIterator> values;
 
-    public ReadOp (Table table, String key, Set<String> fields, HashMap<String,ByteIterator> result) {
+    public UpdateOp (String table, String key, HashMap<String,ByteIterator> values) {
 	this.table = table;
 	this.key = key;
-	this.fields = fields;
-	this.result = result;
+	this.values = values;
+	preValues = new HashMap<String,ByteIterator>();
     }
 
     @Override
     public Status doOp(DB db) {
-	return db.read(table, key, fields, result);
+	Status readPre = db.read(table, key, null, preValues);
+	//error when read previous values
+	if( readPre.equals(Status.ERROR) ) return Status.ERROR;
+	//row not found
+	else if( readPre.equals(Status.NOT_FOUND) ) {
+		preValues = null;
+	}
+	return db.update(table, key, values);
     }
 
-    //Assume undoOp() for readOp is always successful
-    //don't need to keep the previous value of result
     @Override
     public Status undoOp(DB db) {
-        return Status.OK;
+	if(preValues == null) {
+        	return db.delete(table, key);
+	}
+	Status deleteStatus = db.delete(table, key)
+	if( !deleteStatus.equlas(Status.OK) ) return deleteStatus;
+	return db.insert(table, key, preValues);
     }
 }

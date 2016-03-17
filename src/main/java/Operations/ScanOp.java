@@ -33,27 +33,29 @@ import com.yahoo.ycsb.Status;
 import com.yahoo.ycsb.DB;
 
 /**
- * Created by sicongfeng on 16/2/19.
- * modified by Xin on 16/2/24
+ * Created by Xin on 16/3/16
  */
 
-public class ReadOp extends Operation {
+public class ScanOp extends Operation {
+    private int recordcount;
     private Set<String> fields; 
-    private HashMap<String,ByteIterator> result;
+    private Vector<HashMap<String,ByteIterator>> result;
 
-    public ReadOp (Table table, String key, Set<String> fields, HashMap<String,ByteIterator> result) {
+    public ScanOp (Table table, String key, int recordcount, 
+			Set<String> fields, Vector<HashMap<String,ByteIterator>> result) {
 	this.table = table;
-	this.key = key;
+	this.key = key; //the startkey to scan
+	this.recordcount = recordcount;
 	this.fields = fields;
 	this.result = result;
     }
 
     @Override
     public Status doOp(DB db) {
-	return db.read(table, key, fields, result);
+	return db.scan(table, key, recordcount, fields, result);
     }
 
-    //Assume undoOp() for readOp is always successful
+    //Assume undoOp() for ScanOp is always successful
     //don't need to keep the previous value of result
     @Override
     public Status undoOp(DB db) {
