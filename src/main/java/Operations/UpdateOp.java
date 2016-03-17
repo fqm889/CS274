@@ -29,9 +29,6 @@ import java.util.Set;
 import java.util.Vector;
 import java.util.concurrent.atomic.AtomicInteger;
 
-import com.yahoo.ycsb.Status;
-import com.yahoo.ycsb.DB;
-
 /**
  * Created by sicongfeng on 16/2/19.
  * modified by Xin on 16/2/24

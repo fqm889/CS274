@@ -15,5 +15,15 @@ public class PTProcessor {
 
     public void checkPT() {}
 
-    public void processPT() {}
+    public boolean allDCUpdated() {
+        return false;
+    }
+
+    public boolean readSetValUnchanged() {
+        return false;
+    }
+
+    public void processPT() {
+
+    }
 }

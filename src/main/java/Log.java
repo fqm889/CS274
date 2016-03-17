@@ -8,6 +8,10 @@ public class Log {
 
     public Log() {}
 
+    public ArrayList<Txns> getLog() {
+        return log;
+    }
+
     public Log addTxns(Txns t) {
         return this;
     }

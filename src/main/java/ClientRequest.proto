@@ -1,0 +1,15 @@
+message ClientRequest {
+    required string id = 1;
+    required string type = 2;
+    optional string table = 3;
+    optional string key = 4;
+    repeated string fields = 5;
+    optional string startkey = 6;
+    optional int32 recordcount = 7;
+    repeated FieldValue fv = 8;
+}
+
+message FieldValue {
+    required string field = 1;
+    required bytes value = 2;
+}

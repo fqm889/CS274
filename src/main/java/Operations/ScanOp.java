@@ -1,5 +1,6 @@
 package Operations;
 
+<<<<<<< HEAD
 import org.apache.hadoop.security.UserGroupInformation;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.hbase.Cell;

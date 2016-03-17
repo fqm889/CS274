@@ -1,12 +1,14 @@
 package Operations;
 
+import com.yahoo.ycsb.Status;
+import com.yahoo.ycsb.DB;
+
+
 /**
  * Created by sicongfeng on 16/2/19.
  * Modified by Xin Liu on 16/3/16.
  */
 
-import com.yahoo.ycsb.Status;
-import com.yahoo.ycsb.DB;
 
 public abstract class Operation {
     //the name of the table
@@ -15,4 +17,5 @@ public abstract class Operation {
     private String key;
     public abstract Status doOp(DB db);
     public abstract Status undoOp(DB db);
+
 }

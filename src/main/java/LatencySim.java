@@ -6,5 +6,12 @@ import java.util.concurrent.BlockingQueue;
 public class LatencySim {
     public int latency;
 
-    public void delay(ClientReq req) { }
+    public void delay(ClientReq req) {
+        try {
+            Thread.sleep(latency);
+        } catch (InterruptedException e) {
+        } finally {
+
+        }
+    }
 }
