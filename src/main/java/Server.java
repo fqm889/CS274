@@ -1,5 +1,6 @@
 import java.io.IOException;
 import java.net.InetSocketAddress;
+import java.nio.ByteBuffer;
 import java.nio.channels.*;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
@@ -24,14 +25,20 @@ class PendingKey {
 
 
 public class Server implements Runnable {
+    public Scheduler scheduler;
+
     public LinkedBlockingQueue<Request> q;
-    public ConcurrentHashMap<String, Request> activeTxns;
+
     public ServerSocketChannel serverChannel;
     public Selector selector;
     public ConcurrentLinkedQueue<PendingKey> pending = new ConcurrentLinkedQueue<PendingKey>();
+
+    public ByteBuffer buffer = ByteBuffer.allocateDirect(1024 * 64 - 1);
+
     LatencySim latencySim; // simulates latency here
 
-    public Server(String ip, int port) throws IOException {
+    public Server(String ip, int port, Scheduler scheduler) throws IOException {
+        this.scheduler = scheduler;
         this.selector = Selector.open();
         this.serverChannel = ServerSocketChannel.open();
         serverChannel.configureBlocking(false);
@@ -62,9 +69,6 @@ public class Server implements Runnable {
         return null;
     }
 
-    public void sendToDC(Request req) {
-        // Once found request for other DC, immediately send
-    }
 
     public void doRead(SelectionKey key) {
 

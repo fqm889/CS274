@@ -15,6 +15,10 @@ public class Txns {
     public boolean pending;
     public boolean local;
 
+    public void AddOp(Operation op) {
+        ops.add(op);
+    }
+
     public boolean isProcessed() {
         return processed;
     }
