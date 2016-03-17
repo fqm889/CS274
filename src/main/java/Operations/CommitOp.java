@@ -32,41 +32,36 @@ import java.util.concurrent.atomic.AtomicInteger;
 
 /**
  * Created by sicongfeng on 16/2/19.
+ * Modified by xinliu on 16/3/16.
  */
 public class CommitOp extends Operation {
 
-    List<WriteOp> toWriteList;
-    Stack<WriteOp> writeDoneStack;
+    List<Operation> toWriteList;
+    Stack<Operation> writeDoneStack;
 
-
-    public CommitOp(List<WriteOp> toWriteList) {
+    public CommitOp(List<Operation> toWriteList) {
 	this.toWriteList = toWriteList;
 	writeDoneStack = new Stack<WriteOp>();
     }
 
     @Override
-    public boolean doOp() {
-	boolean toAbort = false;
+    public Status doOp() {
 	for(WriteOp w : toWriteList) {
-		if( w.doOp() ) {
+		if( w.doOp().equals(Status.OK) ) {
 			writeDoneStack.push(w);
 		} else {
-			toAbort = true;
+			return Status.ERROR;
 		}
 	}
-
-	if( toAbort ) {
-		while( !writeDoneStack.isEmpty() ) {
-			WriteOp w = writeDoneStack.pop();
-			w.undoOp();
-		}
-	}
-
-        return !toAbort;
+        return Status.OK;
     }
 
     @Override
-    public boolean undoOp() {
-        return false;
+    public Status undoOp() {
+	while( !writeDoneStack.isEmpty() ) {
+		WriteOp w = writeDoneStack.pop();
+		if( !w.undoOp().equals(Status.OK) ) return Status.ERROR;
+	}
+        return Status.OK;
     }
 }
