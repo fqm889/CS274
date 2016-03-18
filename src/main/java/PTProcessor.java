@@ -11,7 +11,10 @@ public class PTProcessor {
     public PT pt;
     ArrayList<Txns> waitinglist;
 
-    public PTProcessor(Log log, PT pt) {}
+    public PTProcessor(Log log, PT pt) {
+	this.log = log;
+	this.pt = pt;
+    }
 
     public void checkPT() {}
 

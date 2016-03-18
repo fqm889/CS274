@@ -29,9 +29,8 @@ import java.util.Set;
 import java.util.Vector;
 import java.util.concurrent.atomic.AtomicInteger;
 
-import com.yahoo.ycsb.Status;
-import com.yahoo.ycsb.DB;
 import java.sql.Timestamp;
+import java.util.Date;
 
 /**
  * Created by sicongfeng on 16/2/19.
@@ -42,9 +41,12 @@ public class ReadOp extends Operation {
     public Set<String> fields; 
     public HashMap<String,ByteIterator> result;
     //for Helios to check overwritten
-    public Timestamp ts;    
+    public long ts;  // use current time as ts
+    public String columnFamily = "";  
 
-    public ReadOp (String table, String key, Set<String> fields, HashMap<String,ByteIterator> result) {
+    public ReadOp (String columnFamily, String table, String key, 
+		Set<String> fields, HashMap<String,ByteIterator> result) {
+	this.columnFamily = columnFamily;
 	this.table = table;
 	this.key = key;
 	this.fields = fields;
@@ -52,19 +54,82 @@ public class ReadOp extends Operation {
     }
 
     @Override
-    public Status doOp(DB db) {
-	return db.read(table, key, fields, result);
+    public Status doOp(Connection connection) {
+      TableName tName = TableName.valueOf(table);
+      byte[] columnFamilyBytes = Bytes.toBytes(columnFamily);
+      Table currentTable;
+      try {
+        currentTable = connection.getTable(tName);
+      } catch (IOException e) {
+        System.err.println("Error accessing HBase table: " + e);
+        return Status.ERROR;
+      }
+
+    Result r = null;
+    try {
+      Get g = new Get(Bytes.toBytes(key));
+      if (fields == null) {
+        g.addFamily(columnFamilyBytes);
+      } else {
+        for (String field : fields) {
+          g.addColumn(columnFamilyBytes, Bytes.toBytes(field));
+        }
+      }
+      r = currentTable.get(g);
+    } catch (Exception e) {
+      return Status.ERROR;
+    } 
+
+    if (r.isEmpty()) {
+      return Status.NOT_FOUND;
     }
+
+    while (r.advance()) {
+      final Cell c = r.current();
+      result.put(Bytes.toString(CellUtil.cloneQualifier(c)),
+          new ByteArrayByteIterator(CellUtil.cloneValue(c)));
+    }
+    ts = ( new Date() ).getTime();
+    return Status.OK;
+    }
+
 
     //Assume undoOp() for readOp is always successful
     //don't need to keep the previous value of result
     @Override
-    public Status undoOp(DB db) {
+    public Status undoOp(Connection connection) {
         return Status.OK;
     }
+
 
     //for Helios, to get readSet
     public String getTableKey() {
 	return table + '_' + key;
     }
+
+    public boolean isOverwritten(Connection connection) {
+      TableName tName = TableName.valueOf(WriteOp.TS_TABLE);
+      Table currentTable;
+      try {
+        currentTable = connection.getTable(tName);
+      } catch (IOException e) {
+        return false;
+      }
+
+    Result r = null;
+    try {
+      Get g = new Get(Bytes.toBytes(table));
+      g.addFamily(Bytes.toBytes(key));
+      r = currentTable.get(g);
+    } catch (Exception e) {
+      return false;
+    } 
+
+    if (r.isEmpty()) {
+      return false;	
+    }
+      long currentTs = Bytes.toLong( r.value() );
+
+    if(ts <= currentTs) return false;
+    else return true;
 }

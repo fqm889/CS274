@@ -34,37 +34,32 @@ import com.yahoo.ycsb.DB;
 
 /**
  * Created by sicongfeng on 16/2/19.
- * modified by Xin on 16/3/16
+ * modified by Xin on 16/2/24
  */
 
-public class InsertOp extends WriteOp {
-    public HashMap<String,ByteIterator> values;
-    public String columnFamily = "";  
-    public Durability durability = Durability.USE_DEFAULT;
-    UpdateOp updateOp;
+public abstract class WriteOp extends Operation {
+  public static String TS_TABLE = "TimeStampTable";
 
-    public InsertOp (String columnFamily, String table, String key, HashMap<String,ByteIterator> values) {
-	this.columnFamily = columnFamily;
-	this.table = table;
-	this.key = key;
-	this.values = values;
-	preValues = new HashMap<String,ByteIterator>();	
-	this.updateOp = new UpdateOp(columnFamily, table, key, 
-			values);
-    }
+  public boolean updateTimetamp(String table, String key, Connection connection) {
+      TableName tName = TableName.valueOf(TS_TABLE);
+      Table currentTable;
+      try {
+        currentTable = connection.getTable(tName);
+      } catch (IOException e) {
+        return false;
+      }
 
-    @Override
-    public Status doOp(Connection connection) {
-	updateOp.doOp(connection);
-    }
+      Put p = new Put(Bytes.toBytes(table));
+      long ts = ( new Date() ).getTime();
+      p.addColumn(Bytes.toBytes(key), Bytes.toBytes(ts));
 
-    @Override
-    public Status undoOp(Connection connection) {
-	if(preValues == null) {
-        	return db.delete(table, key);
-	}
-	Status deleteStatus = db.delete(table, key)
-	if( !deleteStatus.equlas(Status.OK) ) return deleteStatus;
-	return db.insert(table, key, preValues);
+    try {
+        currentTable.put(p);
+    } catch (xception e) {
+      return false;
     }
+    return true;
+  }
+      
+  }
 }

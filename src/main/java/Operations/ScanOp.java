@@ -29,8 +29,6 @@ import java.util.Set;
 import java.util.Vector;
 import java.util.concurrent.atomic.AtomicInteger;
 
-import com.yahoo.ycsb.Status;
-import com.yahoo.ycsb.DB;
 
 /**
  * Created by Xin on 16/3/16
@@ -44,8 +42,9 @@ public class ScanOp extends Operation {
     public Set<String> fields; 
     public Vector<HashMap<String,ByteIterator>> result;
 
-    public ScanOp (String table, String key, int recordcount, 
+    public ScanOp (String columnFamily, String table, String key, int recordcount, 
 			Set<String> fields, Vector<HashMap<String,ByteIterator>> result) {
+	this.columnFamily = columnFamily;
 	this.table = table;
 	this.key = key; //the startkey to scan
 	this.recordcount = recordcount;
@@ -54,14 +53,76 @@ public class ScanOp extends Operation {
     }
 
     @Override
-    public Status doOp(DB db) {
-	return db.scan(table, key, recordcount, fields, result);
+    public Status doOp(Connection connection) {
+      TableName tName = TableName.valueOf(table);
+      byte[] columnFamilyBytes = Bytes.toBytes(columnFamily);
+      Table currentTable;
+      try {
+        currentTable = connection.getTable(tName);
+      } catch (IOException e) {
+        System.err.println("Error accessing HBase table: " + e);
+        return Status.ERROR;
+      }
+
+    Scan s = new Scan(Bytes.toBytes(key));
+    // HBase has no record limit. Here, assume recordcount is small enough to
+    // bring back in one call.
+    // We get back recordcount records
+    s.setCaching(recordcount);
+
+    // add specified fields or else all fields
+    if (fields == null) {
+      s.addFamily(columnFamilyBytes);
+    } else {
+      for (String field : fields) {
+        s.addColumn(columnFamilyBytes, Bytes.toBytes(field));
+      }
     }
+
+    // get results
+    ResultScanner scanner = null;
+    try {
+      scanner = currentTable.getScanner(s);
+      int numResults = 0;
+      for (Result rr = scanner.next(); rr != null; rr = scanner.next()) {
+        // get row key
+        String key = Bytes.toString(rr.getRow());
+
+        HashMap<String, ByteIterator> rowResult =
+            new HashMap<String, ByteIterator>();
+
+        while (rr.advance()) {
+          final Cell cell = rr.current();
+          rowResult.put(Bytes.toString(CellUtil.cloneQualifier(cell)),
+              new ByteArrayByteIterator(CellUtil.cloneValue(cell)));
+        }
+
+        // add rowResult to result vector
+        result.add(rowResult);
+        numResults++;
+
+        // PageFilter does not guarantee that the number of results is <=
+        // pageSize, so this
+        // break is required.
+        if (numResults >= recordcount) {// if hit recordcount, bail out
+          break;
+        }
+      } // done with row
+    } catch (IOException e) {
+      return Status.ERROR;
+    } finally {
+      if (scanner != null) {
+        scanner.close();
+      }
+    }
+
+    return Status.OK;
+  }
 
     //Assume undoOp() for ScanOp is always successful
     //don't need to keep the previous value of result
     @Override
-    public Status undoOp(DB db) {
+    public Status undoOp(Connection connection) {
         return Status.OK;
     }
 }

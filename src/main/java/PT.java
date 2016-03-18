@@ -12,13 +12,17 @@ public class PT {
 
 
 
-    public PT() {}
+    public PT() {
+	pt = new ArrayList<Txns>();
+    }
 
     public PT addTxns(Txns t) {
+	pt.add(t);
         return this;
     }
 
     public PT delTxns(Txns t) {
+	pt.remove(t);
         return this;
     }
 
