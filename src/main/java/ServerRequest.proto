@@ -1,0 +1,27 @@
+message Log {
+    required string DC = 1;
+    repeated txn txns = 2;
+}
+
+message txn {
+    required string txn_id = 1;
+    required string status = 2;
+    repeated operation op = 3;
+}
+
+message operation {
+    required string type = 1;
+    required string status = 2;
+    optional string table = 3;
+    optional string key = 4;
+    repeated string fields = 5;
+    optional string startkey = 6;
+    optional int32 recordcount = 7;
+    repeated FieldValue fv = 8;
+}
+
+message FieldValue {
+    required string field = 1;
+    required bytes value = 2;
+}
+

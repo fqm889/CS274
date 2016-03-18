@@ -19,7 +19,14 @@ public class QueryResult {
         this.result = result;
     }
 
+    private ClientRespondOuterClass.FieldValue makefv(String f, ByteString v) {
+        ClientRespondOuterClass.FieldValue.Builder fvBuilder = ClientRespondOuterClass.FieldValue.newBuilder();
+        fvBuilder.setField(f).setValue(v);
+        return fvBuilder.build();
+    }
+
     public byte[] toByteArray() {
+        System.out.println("toByteArray");
         ClientRespondOuterClass.ClientRespond.Builder crBuilder = ClientRespondOuterClass.ClientRespond.newBuilder();
 
         if (type.equals("READ")) {
@@ -29,11 +36,7 @@ public class QueryResult {
             Iterator it = res.entrySet().iterator();
             while (it.hasNext()) {
                 Map.Entry<String, ByteString> pair = (Map.Entry) it.next();
-
-                ClientRespondOuterClass.FieldValue.Builder fvBuilder = ClientRespondOuterClass.FieldValue.newBuilder();
-                fvBuilder.setField(pair.getKey()).setValue(pair.getValue());
-
-                mfvBuilder.addFv(fvBuilder);
+                mfvBuilder.addFv(makefv(pair.getKey(), pair.getValue()));
             }
 
             ClientRespondOuterClass.MapFieldValue mfv = mfvBuilder.build();
@@ -50,11 +53,7 @@ public class QueryResult {
                 Iterator it2 = it.next().entrySet().iterator();
                 while (it2.hasNext()) {
                     Map.Entry<String, ByteString> pair = (Map.Entry) it2.next();
-
-                    ClientRespondOuterClass.FieldValue.Builder fvBuilder = ClientRespondOuterClass.FieldValue.newBuilder();
-                    fvBuilder.setField(pair.getKey()).setValue(pair.getValue());
-
-                    mfvBuilder.addFv(fvBuilder);
+                    mfvBuilder.addFv(makefv(pair.getKey(), pair.getValue()));
                 }
                 ClientRespondOuterClass.MapFieldValue mfv = mfvBuilder.build();
                 crBuilder.addVfv(mfv);

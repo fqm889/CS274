@@ -4,6 +4,8 @@ import java.io.IOException;
 import java.sql.Timestamp;
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.HashSet;
+import java.util.StringTokenizer;
 import java.util.concurrent.ConcurrentHashMap;
 
 /**
@@ -18,6 +20,9 @@ public class Scheduler {
     public PTProcessor ptProcessor; // run in separate thread, deal with PT
     public Log log; // keep book, thread safe
     public PT pt; // keep book, thread safe
+
+    public String DCName;
+    public int DCNum;
 
     public ArrayList<ArrayList<Timestamp>> T;
     public HashMap<String, Integer> DC2Num;
@@ -38,6 +43,8 @@ public class Scheduler {
         } catch (IOException e) {
             e.printStackTrace();
         }
+        Thread cServer = new Thread(client);
+        cServer.start();
         // start sender
 
         // start client
@@ -49,12 +56,27 @@ public class Scheduler {
         // prepare Processor
         logProcessor = new LogProcessor(log, pt);
         ptProcessor = new PTProcessor(log, pt);
+        currentTxns = new ConcurrentHashMap<String, Txns>();
     }
 
     public void algorithm() {
+        DBS db = new DBS("127.0.0.1", 9999);
+        try {
+            db.start();
+        } catch (DBException e) {
+            e.printStackTrace();
+        }
+        int count = 0;
+
         while (true) {
             // check receiver for new request from other DC
-
+            try {
+                Thread.sleep(50);
+            } catch (InterruptedException e) {
+                e.printStackTrace();
+            }
+            if (count++<10)
+                db.read("a", "a", new HashSet<String>(), new HashMap<String, ByteIterator>());
             // check client for new request from client
 
             // logProcessor
@@ -66,23 +88,29 @@ public class Scheduler {
     }
 
     public void addTxn(String txn_id) {
+        System.out.println("Into Addtxn");
         if (!currentTxns.contains(txn_id)) {
+            System.out.println("Add Txn2222222222222");
             currentTxns.put(txn_id, new Txns());
         }
+        System.out.println("Finishing AddTxn");
     }
 
     public QueryResult addOneOpTxn(String txn_id, Operation op) {
-        if (currentTxns.contains(txn_id)) {
+        System.out.println("Add One Op" + txn_id);
+        if (currentTxns.containsKey(txn_id)) {
+            System.out.println("current txn");
             Txns txns = currentTxns.get(txn_id);
-            txns.AddOp(op);
+            // txns.AddOp(op);
             // execute read operations immediately
-            return null;
+            return new QueryResult(txn_id, "1", null);
         }
         return null;
     }
 
     public static void main(String[] args) {
         Scheduler scheduler = new Scheduler();
+        System.out.println("START");
         scheduler.algorithm();
     }
 }

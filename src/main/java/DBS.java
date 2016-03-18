@@ -16,6 +16,16 @@ public class DBS {
     int port;
     Socket txn_connection;
 
+    public DBS(String IP, int port) {
+        this.IP = IP;
+        this.port = port;
+        try {
+            init();
+        } catch (DBException e) {
+            e.printStackTrace();
+        }
+    }
+
     public void init() throws DBException {
         txn_id = UUID.randomUUID().toString();
         try {
@@ -87,6 +97,7 @@ public class DBS {
             e.printStackTrace();
         }
         // wait for response
+
 
 
         return null;
