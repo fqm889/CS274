@@ -31,6 +31,7 @@ import java.util.concurrent.atomic.AtomicInteger;
 
 import com.yahoo.ycsb.Status;
 import com.yahoo.ycsb.DB;
+import java.sql.Timestamp;
 
 /**
  * Created by sicongfeng on 16/2/19.
@@ -38,10 +39,12 @@ import com.yahoo.ycsb.DB;
  */
 
 public class ReadOp extends Operation {
-    private Set<String> fields; 
-    private HashMap<String,ByteIterator> result;
+    public Set<String> fields; 
+    public HashMap<String,ByteIterator> result;
+    //for Helios to check overwritten
+    public Timestamp ts;    
 
-    public ReadOp (Table table, String key, Set<String> fields, HashMap<String,ByteIterator> result) {
+    public ReadOp (String table, String key, Set<String> fields, HashMap<String,ByteIterator> result) {
 	this.table = table;
 	this.key = key;
 	this.fields = fields;
@@ -60,4 +63,8 @@ public class ReadOp extends Operation {
         return Status.OK;
     }
 
+    //for Helios, to get readSet
+    public String getTableKey() {
+	return table + '_' + key;
+    }
 }

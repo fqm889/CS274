@@ -8,12 +8,11 @@ public class AbortOp extends Operation {
     public Status doOp() {
         return Status.OK;
     }
-<<<<<<< HEAD
+
 
     @Override
     public Status undoOP() {
         return Status.OK;
     }
-=======
->>>>>>> master
+
 }

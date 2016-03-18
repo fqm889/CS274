@@ -12,9 +12,9 @@ import com.yahoo.ycsb.DB;
 
 public abstract class Operation {
     //the name of the table
-    private String table;
+    public String table;
     //The record key of the record to oprate
-    private String key;
+    public String key;
     public abstract Status doOp(DB db);
     public abstract Status undoOp(DB db);
 

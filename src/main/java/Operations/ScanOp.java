@@ -38,11 +38,14 @@ import com.yahoo.ycsb.DB;
  */
 
 public class ScanOp extends Operation {
-    private int recordcount;
-    private Set<String> fields; 
-    private Vector<HashMap<String,ByteIterator>> result;
 
-    public ScanOp (Table table, String key, int recordcount, 
+    //don't put scan set into the readSet to check conflict
+    //no timestamp for scan
+    public int recordcount;
+    public Set<String> fields; 
+    public Vector<HashMap<String,ByteIterator>> result;
+
+    public ScanOp (String table, String key, int recordcount, 
 			Set<String> fields, Vector<HashMap<String,ByteIterator>> result) {
 	this.table = table;
 	this.key = key; //the startkey to scan
