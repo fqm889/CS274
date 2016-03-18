@@ -112,6 +112,21 @@ public class HeliosScheduler extends Scheduler {
     }
 
     //update local read and write sets, remove txn from pt
+    public void commitTxnInPt(Txns txn) {
+	for(Operation op : txn.ops) {
+	    if( op instanceof ReadOp ) {
+		localReadSet.remove(op.table + '_' + op.key);
+	    } else if ( op instanceof WriteOp) {
+		localWriteSet.remove(op.table + '_' + op.key);
+	    }
+	}
+	txn.time = new Timestamp( (new Date()).getTime );
+	txn.setState(txnsState.COMMIT);
+	pt.delTxns(txn);
+	log.addTxns(txn);
+	//after addTxns(), should propagate this txn, is the propagation included in addTxns()???
+    }
+
     public void abortTxnInPt(Txns txn) {
 	for(Operation op : txn.ops) {
 	    if( op instanceof ReadOp ) {

@@ -19,9 +19,8 @@ public class HeliosPTProcessor extends PTProcessor {
 		if( !toCommit) break;
 		else {
 			t.write();
-			t.commit();
-			t.time = new Timestamp( (new Date()).getTime );
-			log.addTxns(t); 
+			//update local
+			hs.commitTxnInPt(t) 
 			//update T[local, local], propagate t??? 
 		} 
 	}
