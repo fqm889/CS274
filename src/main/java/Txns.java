@@ -57,7 +57,11 @@ public class Txns {
 
     public void abort() {}
 
-    public void write() {}
+    public void write() {
+	for(Operation op : ops) {
+		if(op instance WriteOp) op.doOp();
+	}
+    }
 
     public boolean checkForConflict(Txns t) {
         return false;

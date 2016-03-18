@@ -68,7 +68,7 @@ public class HeliosScheduler extends Scheduler {
      * process commit request sent by client
      * false means has conflict, abort txn_id 
      * true means no conflict, put txn into pt 
-     * /
+     */
     public boolean processCR(String txn_id) {
 	Txns txn = currentTxns.get(txn_id);
 	if(txn == null) return false; //not a current txn
