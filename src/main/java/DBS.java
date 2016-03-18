@@ -98,6 +98,14 @@ public class DBS {
         }
         // wait for response
 
+        try {
+            System.out.println("Waiting for db response");
+            ClientRespondOuterClass.ClientRespond respond =
+                    ClientRespondOuterClass.ClientRespond.parseFrom(txn_connection.getInputStream());
+            System.out.println(respond.getId());
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
 
 
         return null;

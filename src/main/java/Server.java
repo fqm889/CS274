@@ -103,10 +103,13 @@ public class Server implements Runnable {
         System.out.println("Got channel in Write");
         synchronized (attn) {
             LinkedList<ByteBuffer> toWrites = attn.toWrite;
+            System.out.println("GOT toWrites");
             int size = toWrites.size();
             if (size == 1) {
+                System.out.println("Size == 1");
                 try {
                     ch.write(toWrites.get(0));
+                    System.out.println("Written!!!!!!!!!!!");
                 } catch (IOException e) {
 //                    e.printStackTrace();
                 }
@@ -125,6 +128,7 @@ public class Server implements Runnable {
                     ite.remove();
                 }
             }
+            System.out.println("Removed toWrites");
         }
         key.interestOps(SelectionKey.OP_READ);
     }

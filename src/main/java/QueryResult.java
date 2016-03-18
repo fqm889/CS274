@@ -40,7 +40,7 @@ public class QueryResult {
             }
 
             ClientRespondOuterClass.MapFieldValue mfv = mfvBuilder.build();
-            ClientRespondOuterClass.ClientRespond cr = crBuilder.setFv(mfv).build();
+            ClientRespondOuterClass.ClientRespond cr = crBuilder.setFv(mfv).setType(type).setId(id).setStatus("SUCCESS").build();
             return cr.toByteArray();
         }
 
@@ -62,6 +62,10 @@ public class QueryResult {
             return cr.toByteArray();
         }
 
-        else return null;
+        else {
+            ClientRespondOuterClass.ClientRespond cr = crBuilder.setType("99999999").setId(id).setStatus("SUCCESS").build();
+            System.out.println();
+            return cr.toByteArray();
+        }
     }
 }
