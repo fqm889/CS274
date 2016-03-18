@@ -2,7 +2,7 @@
 import java.util.ArrayList;
 
 /**
- * Created by sicongfeng on 16/2/19.
+ * Created by Xin Liu on 16/3/15.
  */
 public class HeliosLogProcessor extends LogProcessor {
     // pass in the Log of Scheduler, process log every time the Scheduler calls it
@@ -24,7 +24,9 @@ public class HeliosLogProcessor extends LogProcessor {
                 t.write();
 		scheduler.removeEPT(t);
             }
-	    //update T according to t.time and host DC, how to represent each DC???
+	    //update T according to t.time and host DC
+	    scheduler.updateT(Txns t);
+	    log.delTxns( t ); //delete t from log
         }
     }
 

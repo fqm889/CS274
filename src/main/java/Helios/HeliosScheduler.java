@@ -167,4 +167,19 @@ public class HeliosScheduler extends Scheduler {
 	    }
 	}
     }
+
+    //update T[DCNum, t.hostDCNum] = t.time, true
+    //either t is local, or t.time is not after T[DCNum, t.hostDCNum], no update, false
+    public boolean updateT(Txns t) {
+	if( t.isLocal(this) ) return false;
+	Timestamp txnTS = t.time;
+	int remoteDC = t.hostDCNum;
+	ArrayList<Timestamp> thisKnowAll = T.get(DCNum);
+	if( txnTS.after ( thisKnowAll.get(remoteDC) ) ) {
+		thisKnowAll.set(remoteDC, txnTS);
+		return true;
+	} else {
+		return false;
+	}
+    }
 }
