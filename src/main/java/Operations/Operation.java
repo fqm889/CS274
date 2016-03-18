@@ -1,8 +1,6 @@
 package Operations;
 
-import com.yahoo.ycsb.Status;
-import com.yahoo.ycsb.DB;
-
+import org.apache.hadoop.hbase.client.Connection;
 
 /**
  * Created by sicongfeng on 16/2/19.
@@ -15,7 +13,10 @@ public abstract class Operation {
     public String table;
     //The record key of the record to oprate
     public String key;
-    public abstract Status doOp(DB db);
-    public abstract Status undoOp(DB db);
+    public abstract Status doOp(Connection connection);
+    public abstract Status undoOp(Connection connection);
 
+    public enum Status {
+	OK, ERROR, NOT_FOUND
+    }
 }

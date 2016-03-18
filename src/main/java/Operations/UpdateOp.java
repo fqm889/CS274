@@ -34,36 +34,58 @@ import java.util.concurrent.atomic.AtomicInteger;
  * modified by Xin on 16/2/24
  */
 
-public class UpdateOp extends Operation {
-    private HashMap<String,ByteIterator> preValues; 
-    private HashMap<String,ByteIterator> values;
+public class UpdateOp extends WriteOp {
+//    private HashMap<String,ByteIterator> preValues; 
+    
+    public HashMap<String,ByteIterator> values;
+    public String columnFamily = "";  
+    public Durability durability = Durability.USE_DEFAULT;
 
-    public UpdateOp (String table, String key, HashMap<String,ByteIterator> values) {
+    public UpdateOp (String columnFamily, String table, String key, 
+			HashMap<String,ByteIterator> values) {
+	this.columnFamily = columnFamily;
 	this.table = table;
 	this.key = key;
 	this.values = values;
 	preValues = new HashMap<String,ByteIterator>();
     }
 
-    @Override
-    public Status doOp(DB db) {
-	Status readPre = db.read(table, key, null, preValues);
-	//error when read previous values
-	if( readPre.equals(Status.ERROR) ) return Status.ERROR;
-	//row not found
-	else if( readPre.equals(Status.NOT_FOUND) ) {
-		preValues = null;
-	}
-	return db.update(table, key, values);
+    public setDurability (Durability durability) {
+	this.durability = durability;
     }
 
     @Override
-    public Status undoOp(DB db) {
-	if(preValues == null) {
-        	return db.delete(table, key);
-	}
-	Status deleteStatus = db.delete(table, key)
-	if( !deleteStatus.equlas(Status.OK) ) return deleteStatus;
-	return db.insert(table, key, preValues);
+    public Status doOp(Connection connection) {
+      TableName tName = TableName.valueOf(table);
+      byte[] columnFamilyBytes = Bytes.toBytes(columnFamily);
+      Table currentTable;
+      try {
+        currentTable = connection.getTable(tName);
+      } catch (IOException e) {
+        System.err.println("Error accessing HBase table: " + e);
+        return Status.ERROR;
+      }
+
+    Put p = new Put(Bytes.toBytes(key));
+    p.setDurability(durability);
+    for (Map.Entry<String, ByteIterator> entry : values.entrySet()) {
+      byte[] value = entry.getValue().toArray();
+      p.addColumn(columnFamilyBytes, Bytes.toBytes(entry.getKey()), value);
+    }
+
+    try {
+        currentTable.put(p);
+    } catch (Exception e) {
+      return Status.ERROR;
+    }
+
+    // update the timestamp for table:key in the table "TimeStampTable"
+    updateTimetamp(table, key, connection);
+    return Status.OK;
+  }
+
+    @Override
+    public Status undoOp(Connection connection) {
+	return Status.OK;
     }
 }
