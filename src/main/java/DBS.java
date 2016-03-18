@@ -2,6 +2,7 @@
  * Created by sicongfeng on 16/3/13.
  */
 import java.io.IOException;
+import java.io.InputStream;
 import java.net.Socket;
 import java.util.*;
 
@@ -92,21 +93,17 @@ public class DBS {
         ClientRequestOuterClass.ClientRequest req = reqBuilder.build();
 
         try {
-            req.writeTo(txn_connection.getOutputStream());
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
-        // wait for response
-
-        try {
+            req.writeDelimitedTo(txn_connection.getOutputStream());
             System.out.println("Waiting for db response");
+            System.out.println(txn_connection.toString());
+            InputStream is = txn_connection.getInputStream();
             ClientRespondOuterClass.ClientRespond respond =
-                    ClientRespondOuterClass.ClientRespond.parseFrom(txn_connection.getInputStream());
+                    ClientRespondOuterClass.ClientRespond.parseDelimitedFrom(is);
             System.out.println(respond.getId());
         } catch (IOException e) {
             e.printStackTrace();
         }
-
+        // wait for response
 
         return null;
     }

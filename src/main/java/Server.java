@@ -87,8 +87,10 @@ public class Server implements Runnable {
                 buffer.flip();
                 byte[] res = decode(buffer);
                 System.out.println("Finished decode");
-                if (res != null)
+                if (res != null) {
+                    System.out.println("RES NOT NULL!!!!!!!" + res.toString());
                     attn.toWrite.add(ByteBuffer.wrap(res));
+                }
                 pending.add(new PendingKey(key, SelectionKey.OP_WRITE));
                 System.out.println("Add to pending");
             }
@@ -109,6 +111,7 @@ public class Server implements Runnable {
                 System.out.println("Size == 1");
                 try {
                     ch.write(toWrites.get(0));
+                    System.out.println(ch.toString());
                     System.out.println("Written!!!!!!!!!!!");
                 } catch (IOException e) {
 //                    e.printStackTrace();

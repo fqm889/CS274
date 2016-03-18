@@ -2,6 +2,7 @@ import Operations.*;
 import com.google.protobuf.ByteString;
 import com.google.protobuf.InvalidProtocolBufferException;
 
+import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.nio.ByteBuffer;
 import java.nio.channels.SelectionKey;
@@ -26,12 +27,15 @@ public class ClientServer extends Server {
         ByteString b = ByteString.copyFrom(buffer);
         byte[] res = null;
         try {
+//            ByteArrayInputStream bs = new ByteArrayInputStream(buffer.array());
             ClientRequestOuterClass.ClientRequest clientRequest = ClientRequestOuterClass.ClientRequest.parseFrom(b);
             res = dispatchType(clientRequest);
 
             // then register for write in Server.doRead
 
         } catch (InvalidProtocolBufferException e) {
+            e.printStackTrace();
+        } catch (IOException e) {
             e.printStackTrace();
         }
         System.out.println("Finishing decode");

@@ -1,5 +1,8 @@
 import com.google.protobuf.ByteString;
 
+import java.io.ByteArrayInputStream;
+import java.io.ByteArrayOutputStream;
+import java.io.IOException;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Map;
@@ -27,6 +30,7 @@ public class QueryResult {
 
     public byte[] toByteArray() {
         System.out.println("toByteArray");
+        ByteArrayOutputStream bo = new ByteArrayOutputStream();
         ClientRespondOuterClass.ClientRespond.Builder crBuilder = ClientRespondOuterClass.ClientRespond.newBuilder();
 
         if (type.equals("READ")) {
@@ -41,7 +45,12 @@ public class QueryResult {
 
             ClientRespondOuterClass.MapFieldValue mfv = mfvBuilder.build();
             ClientRespondOuterClass.ClientRespond cr = crBuilder.setFv(mfv).setType(type).setId(id).setStatus("SUCCESS").build();
-            return cr.toByteArray();
+            try {
+                cr.writeDelimitedTo(bo);
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+            return bo.toByteArray();
         }
 
         else if (type.equals("SCAN")) {
@@ -59,13 +68,23 @@ public class QueryResult {
                 crBuilder.addVfv(mfv);
             }
             ClientRespondOuterClass.ClientRespond cr = crBuilder.build();
-            return cr.toByteArray();
+            try {
+                cr.writeDelimitedTo(bo);
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+            return bo.toByteArray();
         }
 
         else {
             ClientRespondOuterClass.ClientRespond cr = crBuilder.setType("99999999").setId(id).setStatus("SUCCESS").build();
-            System.out.println();
-            return cr.toByteArray();
+            System.out.println("Writing back ClientRespond");
+            try {
+                cr.writeDelimitedTo(bo);
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+            return bo.toByteArray();
         }
     }
 }
