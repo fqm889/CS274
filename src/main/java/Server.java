@@ -33,8 +33,6 @@ public class Server implements Runnable {
     public Selector selector;
     public ConcurrentLinkedQueue<PendingKey> pending = new ConcurrentLinkedQueue<PendingKey>();
 
-    public ByteBuffer buffer = ByteBuffer.allocateDirect(1024 * 64 - 1);
-
     LatencySim latencySim; // simulates latency here
 
     public Server(String ip, int port, Scheduler scheduler) throws IOException {
@@ -43,7 +41,7 @@ public class Server implements Runnable {
         this.serverChannel = ServerSocketChannel.open();
         serverChannel.configureBlocking(false);
         serverChannel.socket().bind(new InetSocketAddress(ip, port));
-        serverChannel.register(selector, SelectionKey.OP_ACCEPT);
+        serverChannel.register(selector, SelectionKey.OP_ACCEPT, new Attn());
     }
 
     private void accept(SelectionKey key) {

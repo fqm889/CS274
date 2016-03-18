@@ -1,0 +1,16 @@
+message ClientRespond {
+    required string id = 1;
+    required string type = 2;
+    required string status = 3;
+    optional MapFieldValue fv= 4;
+    repeated MapFieldValue Vfv = 5;
+}
+
+message MapFieldValue {
+    repeated FieldValue fv = 1;
+}
+
+message FieldValue {
+    required string field = 1;
+    required bytes value = 2;
+}

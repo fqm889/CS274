@@ -5,7 +5,6 @@ import java.sql.Timestamp;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.LinkedBlockingQueue;
 
 /**
  * Created by sicongfeng on 16/2/19.
@@ -72,13 +71,14 @@ public class Scheduler {
         }
     }
 
-    public String addOneOpTxn(String txn_id, Operation op) {
+    public QueryResult addOneOpTxn(String txn_id, Operation op) {
         if (currentTxns.contains(txn_id)) {
             Txns txns = currentTxns.get(txn_id);
             txns.AddOp(op);
             // execute read operations immediately
             return null;
         }
+        return null;
     }
 
     public static void main(String[] args) {
