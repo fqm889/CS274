@@ -14,6 +14,7 @@ public class HeliosLogProcessor extends LogProcessor {
     @Override
     public void processLog() {
         ArrayList<Txns> ls = log.getLog();
+	int nextIndex = 0;
         for (Txns t : ls) {
             if ( t.isLocal() ) { continue; }
 	    updateLocalPt (t, scheduler);            
@@ -25,9 +26,12 @@ public class HeliosLogProcessor extends LogProcessor {
 		scheduler.removeEPT(t);
             }
 	    //update T according to t.time and host DC
-	    scheduler.updateT(Txns t);
-	    log.delTxns( t ); //delete t from log
+	    scheduler.updateT( t );
+	    nextIndex++; //cannot derectly delete t, use nextIndex to point to the next Txns to process
         }
+	// all the records in log has been processed
+	if( nextIndex == ls.size() ) log.setLog( new ArrayList<Txns>() );
+	else log.setLog( subList(nextIndex, ls.size() ) );
     }
 
     //check externel txn conflict with local preparing Txns

@@ -23,6 +23,8 @@ public class HeliosScheduler extends Scheduler {
     public ConcurrentHashMap<String, Txns> localWriteSet;
     // write set of EPTPool
     public ConcurrentHashMap<String, List<Txns>> externalWriteSet;
+    //now, assume all coTime is 0
+    public ArrayList<ArrayList<Timestamp>> coTime;
 
     public HeliosScheduler() {
 	super();
@@ -80,10 +82,11 @@ public class HeliosScheduler extends Scheduler {
 
 	t.time = new Timestamp( (new Date()).getTime );
 
-	//following method should be atomic, don't know how to do it???
+	//following method should be atomic
 	pt.addTxns(txn);
 	updateLocalSets(txn);
-	//update T, don't know which represent local DC???
+	//update T according to t.time
+	updateT(txn);
 	log.add(txn);
 	//assume currentTxns only contains the txns not send commit request yet, 
 	//need to remove txn from currentTxns
@@ -169,14 +172,13 @@ public class HeliosScheduler extends Scheduler {
     }
 
     //update T[DCNum, t.hostDCNum] = t.time, true
-    //either t is local, or t.time is not after T[DCNum, t.hostDCNum], no update, false
+    //if t.time is not after T[DCNum, t.hostDCNum], no update, false, should not happen
     public boolean updateT(Txns t) {
-	if( t.isLocal(this) ) return false;
 	Timestamp txnTS = t.time;
-	int remoteDC = t.hostDCNum;
+	int txnHost = t.hostDCNum;
 	ArrayList<Timestamp> thisKnowAll = T.get(DCNum);
-	if( txnTS.after ( thisKnowAll.get(remoteDC) ) ) {
-		thisKnowAll.set(remoteDC, txnTS);
+	if( txnTS.after ( thisKnowAll.get(txnHost) ) ) {
+		thisKnowAll.set(txnHost, txnTS);
 		return true;
 	} else {
 		return false;
