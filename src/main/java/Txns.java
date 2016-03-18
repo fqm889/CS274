@@ -83,6 +83,12 @@ public class Txns {
         return false;
     }
 
+    public boolean isReadOnly () {
+	for(Operation op: ops) {
+		if(op instanceof WriteOp) return false;
+	}
+	return true;
+    }
 }
 
 enum txnsState {

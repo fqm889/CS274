@@ -4,10 +4,14 @@ import java.util.ArrayList;
  * Created by sicongfeng on 16/2/19.
  */
 public class Log {
-    ArrayList<Txns> log;
+    public ArrayList<Txns> log;
 
     public Log() {
 	log = new ArrayList<Txns>();
+    }
+
+    public void setLog(ArrayList<Txns> alist) {
+        log = alist;
     }
 
     public ArrayList<Txns> getLog() {

@@ -23,13 +23,14 @@ public class HeliosScheduler extends Scheduler {
     public ConcurrentHashMap<String, Txns> localWriteSet;
     // write set of EPTPool
     public ConcurrentHashMap<String, List<Txns>> externalWriteSet;
-    //now, assume all coTime is 0
-    public ArrayList<ArrayList<Timestamp>> coTime;
+    // assume all coTime is 0
+    // public ArrayList<ArrayList<Timestamp>> coTime;
 
     public HeliosScheduler() {
-	super();
+	// super();
+	localReadSet = new HashMap<String, Txns>();
 	localWriteSet = new HashMap<String, Txns>();
-	externalWriteSet = new HashMap<String, Txns>();
+	externalWriteSet = new HashMap<String, List<Txns>>();
     }
 
     @Override
@@ -69,11 +70,26 @@ public class HeliosScheduler extends Scheduler {
      * Helios Alg 1
      * process commit request sent by client
      * false means has conflict, abort txn_id 
-     * true means no conflict, put txn into pt 
+     * true means no conflict, put txn into pt, put its read set and write set into localSets 
+     * for read-only txn, true means direcly commit, no need to preparing and waiting 
      */
     public boolean processCR(String txn_id) {
 	Txns txn = currentTxns.get(txn_id);
 	if(txn == null) return false; //not a current txn
+
+	//read-only txn don't need to check conflist with PT or EPT
+	if( txn.isReadOnly() ) {
+		if( isOverwritten(txn) ) {
+			txn.abort();			
+			currentTxns.remove(txn_id);
+			return false; //need to send to client txn has abort
+		} else {
+			txn.commit();			
+			currentTxns.remove(txn_id);
+			return true; //need to send to client txn has commit
+			//not same as other preparing txn ????
+		}
+	}
 
 	if( isConflict(txn) ) {
 		currentTxns.remove(txn_id); //abort
@@ -93,23 +109,36 @@ public class HeliosScheduler extends Scheduler {
 	currentTxns.remove(txn_id);
     }
 
-    //if not conflict, only leave the write operations in txn
     public boolean isConflict (Txns txn) {
 	for(Operation op : txn.ops) {
 	    String opKey = op.table + '_' + op.key;
+
+	    //read-set or write-set intersect localWriteSet or externalWriteSet
 	    if( localWriteSet.containsKey(opKey) || externalWriteSet.containsKey(opKey) ) return true;
-	    if( op instanceof ReadOp && op.isOverwritten(connection) ) return true;
-	    } 
+
+	    //read object has been overwritten 
+	    if( op instanceof ReadOp && op.isOverwritten(connection) ) return true; 
 	}
 	return false;
     }
 
+    public boolean isOverwritten (Txns txn) {
+	for(Operation op : txn.ops) {
+	    //read object has been overwritten 
+	    if( op instanceof ReadOp && op.isOverwritten(connection) ) return true; 
+	}
+	return false;
+    }
+
+    //put the read-set of txn into localReadSet
+    //put the write-set of txn into localWriteSet
     public void updateLocalSets(Txns txn) {
 	for(Operation op : txn.ops) {
 	    if( op instanceof ReadOp ) {
 		localReadSet.put(op.table + '_' + op.key, txn);
 	    } else if ( op instanceof WriteOp) {
 		localWriteSet.put(op.table + '_' + op.key, txn);
+		containsWriteOp = true;
 	    }
 	}
     }
@@ -160,6 +189,9 @@ public class HeliosScheduler extends Scheduler {
 	}
     }
 
+    //it's possible that more than one external PT need to write on the same object,
+    // local DC will not decide whether these PT commit or abort
+    // just bookkeeping all the not finish external PT's write-set
     public void removeEPT(Txns txn) {
 	for(Operation op : txn.ops) {
 	    if ( op instanceof WriteOp) {
@@ -173,6 +205,7 @@ public class HeliosScheduler extends Scheduler {
 
     //update T[DCNum, t.hostDCNum] = t.time, true
     //if t.time is not after T[DCNum, t.hostDCNum], no update, false, should not happen
+    // t can either be a local txn (become preparing or finish) or an external txn (P or F)
     public boolean updateT(Txns t) {
 	Timestamp txnTS = t.time;
 	int txnHost = t.hostDCNum;
