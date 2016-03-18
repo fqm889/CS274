@@ -54,22 +54,22 @@ public class ClientServer extends Server {
         }
         else if (opType.equals("READ")) {
             System.out.println(clientRequest.getTable());
-            op = new ReadOp();
+//            op = new ReadOp();
         }
         else if (opType.equals("SCAN")) {
-            op = new ScanOp();
+//            op = new ScanOp();
         }
         else if (opType.equals("INSERT")) {
-            op = new InsertOp();
+//            op = new InsertOp();
         }
         else if (opType.equals("UPDATE")) {
-            op = new UpdateOp();
+//            op = new UpdateOp();
         }
         else if (opType.equals("COMMIT")) {
-            op = new CommitOp();
+//            op = new CommitOp();
         }
         else if (opType.equals("ABORT")) {
-            op = new AbortOp();
+//            op = new AbortOp();
         }
         System.out.println("Before add op");
         QueryResult result = scheduler.addOneOpTxn(id, op);
