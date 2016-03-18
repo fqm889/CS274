@@ -5,7 +5,14 @@ package Operations;
  */
 public class AbortOp extends Operation {
     @Override
-    public boolean doOp() {
-        return false;
+    public Status doOp() {
+        return Status.OK;
     }
+
+
+    @Override
+    public Status undoOP() {
+        return Status.OK;
+    }
+
 }

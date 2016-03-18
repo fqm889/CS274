@@ -1,6 +1,5 @@
 package Operations;
 
-<<<<<<< HEAD
 import org.apache.hadoop.security.UserGroupInformation;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.hbase.Cell;
@@ -35,18 +34,18 @@ import com.yahoo.ycsb.DB;
 
 /**
  * Created by sicongfeng on 16/2/19.
- * modified by Xin on 16/3/16
+ * modified by Xin on 16/2/24
  */
 
-public class InsertOp extends Operation {
+public class UpdateOp extends Operation {
     private HashMap<String,ByteIterator> preValues; 
     private HashMap<String,ByteIterator> values;
 
-    public InsertOp (String table, String key, HashMap<String,ByteIterator> values) {
+    public UpdateOp (String table, String key, HashMap<String,ByteIterator> values) {
 	this.table = table;
 	this.key = key;
 	this.values = values;
-	preValues = new HashMap<String,ByteIterator> ();
+	preValues = new HashMap<String,ByteIterator>();
     }
 
     @Override
